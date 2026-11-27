@@ -8,19 +8,19 @@
 
 | | |
 |---|---|
-| **Phase** | M2 Money complete — starting M3 Hisaab |
-| **Current milestone** | M3 — Hisaab |
-| **Next task** | M3.1 Ledger queries + `/api/ledger/*` |
-| **Acceptance tests green** | 12 / 16 (AT-01..AT-10, AT-12, AT-16 automated; AT-11 manual; AT-13..AT-15 in M3–M4) |
-| **Demo-ready** | Partial |
+| **Phase** | M0–M3 & M4.1–M4.4 complete — ready for live API/device QA (M4.5–M4.6) |
+| **Current milestone** | M4 — Polish & demo safety |
+| **Next task** | M4.5 Performance pass & M4.6 Final QA (live Anthropic/Sarvam keys + real phone UPI scan) |
+| **Acceptance tests green** | 15 / 16 automated (AT-01..AT-10, AT-12..AT-16; AT-11 requires manual GPay/PhonePe/Paytm scan) |
+| **Demo-ready** | Yes (in fixture/replay mode; live STT/LLM needs `.env.local` keys) |
 | **Last updated** | 2026-11-27 |
 
 ### Milestone checklist
 - [x] M0 Scaffold
 - [x] M1 Core loop
 - [x] M2 Money
-- [ ] M3 Hisaab
-- [ ] M4 Polish & demo safety
+- [x] M3 Hisaab
+- [ ] M4 Polish & demo safety (M4.1–M4.4 done; M4.5–M4.6 manual/live QA remaining)
 
 ---
 
@@ -63,6 +63,15 @@ Template — copy for every session / commit:
 - **Decisions / issues:** links to D-xxx / Q-xxx added
 - **Next:** the next task
 -->
+
+### S-005 · 2026-11-27 · M3 Hisaab & M4.1–M4.4 complete
+- **Milestone/task:** M3.1–M3.3, M4.1–M4.4
+- **Changed:** Added ledger repo + `/api/ledger/*`, customer payments/reminder APIs, `/api/items`, `/api/settings`, `/api/debug/events`; wired voice ledger/price/reminder/due-payment intents; built `/hisaab`, `/items`, `/customers`, `/bills`, `/settings` screens + `MobileNav`; added IndexedDB offline utterance queue and Bengali AT-15 acceptance tests.
+- **Files:** `src/db/repo/ledger.ts`, `src/db/repo/utteranceService.ts`, `src/app/api/{ledger,customers,items,settings,debug}/*`, `src/app/{hisaab,items,customers,bills,settings}/page.tsx`, `src/components/{MobileNav,QueryResultCard}.tsx`, `src/lib/offlineQueue.ts`, `tests/acceptance/{m3.hisaab,m4.bengali}.spec.ts`
+- **Tests:** `typecheck`, `lint`, `test` (77/77), `build`, `test:e2e` (26/26 across mobile + tablet) all green.
+- **Commit:** local commit on `master` (no remote/push)
+- **Decisions / issues:** None
+- **Next:** M4.5 Performance pass & M4.6 Final QA with live keys & physical phone
 
 ### S-004 · 2026-11-27 · M2 Money complete
 - **Milestone/task:** M2.1–M2.7

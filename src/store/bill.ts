@@ -1,8 +1,9 @@
 "use client";
 
 import { create } from "zustand";
-import type { Bill, Lang, Question } from "@/engine/types";
+import type { Bill, Lang, LedgerCard, Question } from "@/engine/types";
 import type { TapCommand } from "@/db/repo/utteranceService";
+import { drainUtteranceQueue, enqueueUtterance } from "@/lib/offlineQueue";
 
 export type ShopInfo = {
   id: string;
@@ -20,6 +21,7 @@ type BillState = {
   lang: Lang;
   pendingQuestion: Question | null;
   clarify: { transcript: string; suggestion?: string } | null;
+  queryResult: LedgerCard | null;
   readbackText: string | null;
   toast: string | null;
   partialTranscript: string;
@@ -40,6 +42,7 @@ type BillState = {
   clearToast: () => void;
   clearClarify: () => void;
   submitTranscript: (text: string) => Promise<void>;
+  replayOfflineQueue: () => Promise<void>;
   sendCommand: (cmd: TapCommand) => Promise<void>;
   newBill: () => Promise<void>;
 };
@@ -51,6 +54,7 @@ export const useBillStore = create<BillState>((set, get) => ({
   lang: "hi",
   pendingQuestion: null,
   clarify: null,
+  queryResult: null,
   readbackText: null,
   toast: null,
   partialTranscript: "",
@@ -123,6 +127,7 @@ export const useBillStore = create<BillState>((set, get) => ({
         todayTotal: data.todayTotal ?? get().todayTotal,
         pendingQuestion: data.question ?? null,
         clarify: data.clarify ?? null,
+        queryResult: data.queryResult ?? null,
         readbackText: data.readback?.text ?? null,
         toast: data.toast ?? null,
         micState: "idle",
@@ -133,11 +138,43 @@ export const useBillStore = create<BillState>((set, get) => ({
         onReadback(data.readback.text, data.readback.lang ?? lang);
       }
     } catch {
+      await enqueueUtterance({
+        id: `${bill.id}:${nextSeq}`,
+        billId: bill.id,
+        transcript: trimmed,
+        lang,
+        clientSeq: nextSeq,
+        createdAt: Date.now(),
+      }).catch(() => {});
       set({
         micState: "idle",
-        toast: lang === "bn" ? "Abar cheshta korun" : "Dobara try karein",
+        isOffline: true,
+        toast: lang === "bn" ? "Offline — queue kora holo" : "Connecting... queued",
       });
     }
+  },
+
+  replayOfflineQueue: async () => {
+    await drainUtteranceQueue(async (item) => {
+      try {
+        const res = await fetch("/api/utterance", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            billId: item.billId,
+            transcript: item.transcript,
+            lang: item.lang,
+            clientSeq: item.clientSeq,
+          }),
+        });
+        if (!res.ok) return false;
+        const data = await res.json();
+        set({ bill: data.bill, todayTotal: data.todayTotal ?? get().todayTotal, isOffline: false });
+        return true;
+      } catch {
+        return false;
+      }
+    });
   },
 
   sendCommand: async (cmd: TapCommand) => {

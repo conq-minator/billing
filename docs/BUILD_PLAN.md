@@ -87,21 +87,21 @@ Definition of done for **every** task: *Done when* passes · `pnpm typecheck && 
 
 ## M3 — Hisaab (≈ 1 day)
 
-- [ ] **M3.1 Ledger queries** (today summary, dues list w/ days pending, customer balance + last payment, top items) as repo functions + `/api/ledger/*`.
+- [x] **M3.1 Ledger queries** (today summary, dues list w/ days pending, customer balance + last payment, top items) as repo functions + `/api/ledger/*`.
   *Done when:* AT-13 passes — spoken numbers equal SQL results on seeded + generated data.
-- [ ] **M3.2 Voice intents:** QUERY_LEDGER, QUERY_PRICE (price history: "₹52 per kilo, 3 din pehle"), RECORD_PAYMENT against dues ("Sharma ji ne 500 diya"), SEND_REMINDER (wa.me with polite hi/bn template + amount + https link).
+- [x] **M3.2 Voice intents:** QUERY_LEDGER, QUERY_PRICE (price history: "₹52 per kilo, 3 din pehle"), RECORD_PAYMENT against dues ("Sharma ji ne 500 diya"), SEND_REMINDER (wa.me with polite hi/bn template + amount + https link).
   *Done when:* AT-14 passes on a phone; history answer correct.
-- [ ] **M3.3 Screens ⇄:** Aaj ka hisaab, Items (catalogue, aliases, history, edit), Customers (balances, reminder button), Bills (history, reopen).
+- [x] **M3.3 Screens ⇄:** Aaj ka hisaab, Items (catalogue, aliases, history, edit), Customers (balances, reminder button), Bills (history, reopen).
   *Done when:* each screen usable one-handed on a phone; Playwright smoke test per screen.
 
 ## M4 — Polish & demo safety (≈ 1 day)
 
-- [ ] **M4.1 Bengali end-to-end:** UI labels, readbacks, questions, lexicon, few-shots, STT/TTS `bn-IN`.
+- [x] **M4.1 Bengali end-to-end:** UI labels, readbacks, questions, lexicon, few-shots, STT/TTS `bn-IN`.
   *Done when:* AT-15 (AT-01, AT-03, AT-07 in Bengali) passes; Bengali parser eval ≥ 95%.
-- [ ] **M4.2 Noise handling:** hold-to-talk default, hands-free VAD toggle, retry prompts, mic-permission UX.
-- [ ] **M4.3 Offline-tolerant UI:** IndexedDB utterance queue, "connecting…" pill, ordered replay; PWA install + offline shell (Serwist).
+- [x] **M4.2 Noise handling:** hold-to-talk default, hands-free VAD toggle, retry prompts, mic-permission UX.
+- [x] **M4.3 Offline-tolerant UI:** IndexedDB utterance queue, "connecting…" pill, ordered replay; PWA install + offline shell (Serwist).
   *Done when:* toggling airplane mode mid-bill loses no utterance.
-- [ ] **M4.4 Demo mode:** Settings → Demo: reset data, profile switch (`fresh`/`trained`), replay backup clips (hi + bn) through the pipeline, debug latency panel.
+- [x] **M4.4 Demo mode:** Settings → Demo: reset data, profile switch (`fresh`/`trained`), replay backup clips (hi + bn) through the pipeline, debug latency panel.
   *Done when:* full DEMO.md script runs with STT disabled, using clips only.
 - [ ] **M4.5 Performance pass:** verify prompt cache hits, DB round trips ≤ 2 per utterance, p95 ≤ 1.5 s on venue-like network (throttled 4G). If not met, the team decides whether to switch `LLM_MODEL` (record the decision).
 - [ ] **M4.6 Final QA:** all AT-01…AT-16 green in CI; manual UPI scan + WhatsApp checks; DEMO.md checklist.

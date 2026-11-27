@@ -7,7 +7,9 @@ import { ActionBar } from "./ActionBar";
 import { ClarifyChip } from "./ClarifyChip";
 import { LineEditSheet } from "./LineEditSheet";
 import { LiveBill } from "./LiveBill";
+import { MobileNav } from "./MobileNav";
 import { PendingChip } from "./PendingChip";
+import { QueryResultCard } from "./QueryResultCard";
 import { TopBar } from "./TopBar";
 import { TranscriptStrip } from "./TranscriptStrip";
 import { UpiQrSheet } from "./UpiQrSheet";
@@ -90,6 +92,7 @@ export function CounterScreen({
         <section className="flex flex-col gap-3 lg:sticky lg:top-16 lg:col-span-5">
           <PendingChip />
           <ClarifyChip />
+          <QueryResultCard />
           <TranscriptStrip showDebugBox={showDebugBox} />
           <ActionBar onOpenQr={() => setQrOpen(true)} />
           {micSlot}
@@ -101,6 +104,7 @@ export function CounterScreen({
         onClose={() => setEditingLine(null)}
       />
       <UpiQrSheet open={qrOpen} onClose={() => setQrOpen(false)} />
+      <MobileNav />
     </div>
   );
 }
