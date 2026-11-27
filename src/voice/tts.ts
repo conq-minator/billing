@@ -12,13 +12,13 @@ const COMMON_PHRASES: Array<{ lang: Lang; text: string }> = [
 export async function speakReadback(
   text: string,
   lang: Lang,
-  provider: "sarvam" | "browser" = "browser"
+  provider: "gemini" | "sarvam" | "browser" = "browser"
 ): Promise<void> {
   if (typeof window === "undefined" || !text.trim()) return;
 
   const key = `${lang}:${text}`;
 
-  if (provider === "sarvam") {
+  if (provider === "gemini" || provider === "sarvam") {
     try {
       let audioUrl = memoryCache.get(key);
       if (!audioUrl) {
@@ -52,8 +52,8 @@ export async function speakReadback(
   }
 }
 
-export function prewarmTts(provider: "sarvam" | "browser" = "browser"): void {
-  if (provider !== "sarvam" || typeof window === "undefined") return;
+export function prewarmTts(provider: "gemini" | "sarvam" | "browser" = "browser"): void {
+  if (provider === "browser" || typeof window === "undefined") return;
   for (const p of COMMON_PHRASES) {
     const key = `${p.lang}:${p.text}`;
     if (memoryCache.has(key)) continue;

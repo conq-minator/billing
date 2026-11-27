@@ -7,6 +7,8 @@ const EnvSchema = z.object({
     .default("auto"),
   GEMINI_API_KEY: z.string().optional().default(""),
   GEMINI_MODEL: z.string().default("gemini-2.5-flash"),
+  GEMINI_STT_MODEL: z.string().default("gemini-2.5-flash"),
+  GEMINI_TTS_MODEL: z.string().default("gemini-2.5-flash-preview-tts"),
   GROQ_API_KEY: z.string().optional().default(""),
   GROQ_LLM_MODEL: z.string().default("llama-3.3-70b-versatile"),
   GROQ_STT_MODEL: z.string().default("whisper-large-v3-turbo"),
@@ -14,9 +16,9 @@ const EnvSchema = z.object({
   LLM_MODEL: z.string().default("claude-opus-5-5"),
   LLM_MODE: z.enum(["live", "fixture"]).default("live"),
   STT_PROVIDER: z
-    .enum(["auto", "groq", "sarvam", "webspeech", "replay"])
+    .enum(["auto", "gemini", "groq", "sarvam", "webspeech", "replay"])
     .default("auto"),
-  TTS_PROVIDER: z.enum(["sarvam", "browser"]).default("browser"),
+  TTS_PROVIDER: z.enum(["auto", "gemini", "sarvam", "browser"]).default("auto"),
   SARVAM_API_KEY: z.string().optional().default(""),
   NEXT_PUBLIC_APP_URL: z.string().url().default("http://localhost:3000"),
   DEFAULT_LANG_PRIMARY: z.enum(["hi", "bn"]).default("hi"),
@@ -30,13 +32,13 @@ const EnvSchema = z.object({
 export type AppEnv = z.infer<typeof EnvSchema>;
 
 export type EffectiveLlmProvider = "gemini" | "groq" | "anthropic" | "fixture";
-export type EffectiveSttProvider = "groq" | "sarvam" | "webspeech" | "replay";
+export type EffectiveSttProvider = "gemini" | "groq" | "sarvam" | "webspeech" | "replay";
 
 export type RuntimeConfig = AppEnv & {
   effectiveLlmMode: "live" | "fixture";
   effectiveLlmProvider: EffectiveLlmProvider;
   effectiveSttProvider: EffectiveSttProvider;
-  effectiveTtsProvider: "sarvam" | "browser";
+  effectiveTtsProvider: "gemini" | "sarvam" | "browser";
   fallbackReasons: string[];
 };
 
@@ -50,6 +52,8 @@ export function getEnv(): RuntimeConfig {
     LLM_PROVIDER: process.env.LLM_PROVIDER || undefined,
     GEMINI_API_KEY: process.env.GEMINI_API_KEY || undefined,
     GEMINI_MODEL: process.env.GEMINI_MODEL || undefined,
+    GEMINI_STT_MODEL: process.env.GEMINI_STT_MODEL || undefined,
+    GEMINI_TTS_MODEL: process.env.GEMINI_TTS_MODEL || undefined,
     GROQ_API_KEY: process.env.GROQ_API_KEY || undefined,
     GROQ_LLM_MODEL: process.env.GROQ_LLM_MODEL || undefined,
     GROQ_STT_MODEL: process.env.GROQ_STT_MODEL || undefined,
@@ -101,7 +105,7 @@ export function getEnv(): RuntimeConfig {
     );
   }
 
-  // Resolve STT provider (Groq Whisper > Sarvam > WebSpeech)
+  // Resolve STT provider (Groq Whisper > Gemini > Sarvam > WebSpeech)
   let effectiveSttProvider: EffectiveSttProvider = "webspeech";
   if (parsed.STT_PROVIDER === "replay") {
     effectiveSttProvider = "replay";
@@ -109,15 +113,18 @@ export function getEnv(): RuntimeConfig {
     effectiveSttProvider = "webspeech";
   } else if (parsed.STT_PROVIDER === "groq" && parsed.GROQ_API_KEY) {
     effectiveSttProvider = "groq";
+  } else if (parsed.STT_PROVIDER === "gemini" && parsed.GEMINI_API_KEY) {
+    effectiveSttProvider = "gemini";
   } else if (parsed.STT_PROVIDER === "sarvam" && parsed.SARVAM_API_KEY) {
     effectiveSttProvider = "sarvam";
   } else if (parsed.STT_PROVIDER === "auto") {
     if (parsed.GROQ_API_KEY) effectiveSttProvider = "groq";
+    else if (parsed.GEMINI_API_KEY) effectiveSttProvider = "gemini";
     else if (parsed.SARVAM_API_KEY) effectiveSttProvider = "sarvam";
     else {
       effectiveSttProvider = "webspeech";
       fallbackReasons.push(
-        "No GROQ_API_KEY / SARVAM_API_KEY: using Web Speech STT fallback"
+        "No GROQ_API_KEY / GEMINI_API_KEY / SARVAM_API_KEY: using Web Speech STT fallback"
       );
     }
   } else if (parsed.DEMO_MODE) {
@@ -127,9 +134,15 @@ export function getEnv(): RuntimeConfig {
     );
   }
 
-  let effectiveTtsProvider = parsed.TTS_PROVIDER;
-  if (effectiveTtsProvider === "sarvam" && !parsed.SARVAM_API_KEY) {
-    effectiveTtsProvider = "browser";
+  let effectiveTtsProvider: "gemini" | "sarvam" | "browser" = "browser";
+  if (parsed.TTS_PROVIDER === "gemini" && parsed.GEMINI_API_KEY) {
+    effectiveTtsProvider = "gemini";
+  } else if (parsed.TTS_PROVIDER === "sarvam" && parsed.SARVAM_API_KEY) {
+    effectiveTtsProvider = "sarvam";
+  } else if (parsed.TTS_PROVIDER === "auto") {
+    if (parsed.GEMINI_API_KEY) effectiveTtsProvider = "gemini";
+    else if (parsed.SARVAM_API_KEY) effectiveTtsProvider = "sarvam";
+    else effectiveTtsProvider = "browser";
   }
 
   if (!parsed.DATABASE_URL) {

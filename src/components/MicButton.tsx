@@ -14,8 +14,8 @@ export function MicButton({
   sttProvider,
   ttsProvider,
 }: {
-  sttProvider: "groq" | "sarvam" | "webspeech" | "replay";
-  ttsProvider: "sarvam" | "browser";
+  sttProvider: "gemini" | "groq" | "sarvam" | "webspeech" | "replay";
+  ttsProvider: "gemini" | "sarvam" | "browser";
 }) {
   const {
     lang,
@@ -40,7 +40,11 @@ export function MicButton({
   }, [setOnReadback, ttsProvider]);
 
   function getAdapter(): SttAdapter {
-    if (sttProvider === "groq" || sttProvider === "sarvam") {
+    if (
+      sttProvider === "gemini" ||
+      sttProvider === "groq" ||
+      sttProvider === "sarvam"
+    ) {
       const rec = new RecorderSttAdapter(sttProvider);
       if (rec.isSupported()) return rec;
     }
