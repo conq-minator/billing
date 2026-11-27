@@ -31,7 +31,22 @@ Rules:
    - "Sharma ji ne 500 diya" -> RECORD_PAYMENT customer={name:"Sharma ji"}, payment={mode:"cash", amount:500}
    - "Sharma ji ko reminder bhejo" -> SEND_REMINDER customer={name:"Sharma ji"}
    - "Atta pichli baar kitne ka diya?" -> QUERY_PRICE query={type:"item_price_history", item:"atta"}
-8. If unintelligible or non-billing chatter, return intent="UNKNOWN" with confidence < 0.5.`;
+8. If unintelligible or non-billing chatter, return intent="UNKNOWN" with confidence < 0.5.
+
+Output ONLY valid JSON matching this exact TypeScript/Zod shape:
+{
+  "intent": "ADD_ITEMS"|"EDIT_LINE"|"REMOVE_LINE"|"SET_PRICE"|"APPLY_DISCOUNT"|"SET_CUSTOMER"|"FINISH_BILL"|"RECORD_PAYMENT"|"QUERY_LEDGER"|"QUERY_PRICE"|"SEND_REMINDER"|"READ_BILL"|"ANSWER_PENDING_QUESTION"|"UNKNOWN",
+  "items": [{"name": string, "qty": number, "unit": "kg"|"g"|"l"|"ml"|"pkt"|"pc"|"dozen"|"box"|"bottle"|"bag"|"m"|"unit"|null, "price": number|null, "price_basis": "per_unit"|"line_total"|null}],
+  "target_line": {"ref": "last"|"name", "name": string|null}|null,
+  "changes": {"qty": number|null, "unit": string|null, "price": number|null, "one_time": boolean, "remove_discount": boolean}|null,
+  "discount": {"kind": "percent"|"flat"|"target_total", "value": number, "scope": "whole"|"items"|"unspecified", "item_names": string[], "is_correction": boolean}|null,
+  "customer": {"name": string}|null,
+  "payment": {"mode": "cash"|"upi"|"due"|"split", "amount": number|null}|null,
+  "query": {"type": "today_summary"|"dues_list"|"customer_balance"|"item_price_history"|"top_items", "customer": string|null, "item": string|null}|null,
+  "answer": {"price": number|null, "scope": "whole"|"items"|null, "item_names": string[], "customer": string|null}|null,
+  "language": "hi"|"hinglish"|"bn"|"en",
+  "confidence": number
+}`;
 
 export function buildRequestContext(params: {
   transcript: string;

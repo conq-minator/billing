@@ -28,6 +28,7 @@
 
 | # | Date | Decision | Why | Where |
 |---|------|----------|-----|-------|
+| D-009 | 2026-11-27 | Support Gemini (`gemini-2.5-flash`) + Groq (`llama-3.3-70b-versatile`) for LLM and Groq Whisper (`whisper-large-v3-turbo`) for STT alongside Anthropic/Sarvam/fixture | User requested Groq + Gemini API keys | `src/config/env.ts`, `src/router/llm.ts`, `src/app/api/stt/session/route.ts` |
 | D-008 | 2026-11-27 | Round-off to nearest rupee by default (`ROUND_OFF_TO_PAISE = 100`); target-total discounts have round-off 0 | Spec shows a round-off line but no rule | PRD FR-9.2 |
 | D-007 | 2026-11-27 | Corrected PRD §9 sample: 5% of ₹656 = ₹32.80, round-off −0.20, total ₹623.00 | Original sketch arithmetic was off | PRD FR-9.1 |
 | D-006 | 2026-11-27 | Intent schema extended with `changes.remove_discount`, `discount.is_correction`, `answer` | Make corrections & pending answers explicit, not inferred | ARCHITECTURE §5.3 |

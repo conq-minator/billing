@@ -1,13 +1,21 @@
 import type { Lang } from "@/engine/types";
 import type { SttAdapter, SttCallbacks } from "./types";
 
-export class SarvamSttAdapter implements SttAdapter {
-  readonly name = "sarvam" as const;
+/**
+ * Shared MediaRecorder -> /api/stt/session adapter used for server-side STT
+ * providers (Groq Whisper and Sarvam).
+ */
+export class RecorderSttAdapter implements SttAdapter {
+  readonly name: "groq" | "sarvam";
   private mediaRecorder: MediaRecorder | null = null;
   private chunks: BlobPart[] = [];
   private stream: MediaStream | null = null;
   private callbacks: SttCallbacks | null = null;
   private lang: Lang = "hi";
+
+  constructor(provider: "groq" | "sarvam") {
+    this.name = provider;
+  }
 
   isSupported(): boolean {
     return (

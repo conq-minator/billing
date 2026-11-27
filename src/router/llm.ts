@@ -60,26 +60,98 @@ const UNKNOWN_INTENT: Intent = {
   confidence: 0,
 };
 
-export async function parseWithLlm(params: {
-  transcript: string;
-  lang: Lang;
-  bill: Bill;
-  pendingQuestion?: Question | null;
-  customerNames: string[];
-}): Promise<{ intent: Intent; cacheReadTokens: number; fromFixture: boolean }> {
-  const env = getEnv();
+async function parseWithGemini(
+  apiKey: string,
+  model: string,
+  userContent: string
+): Promise<Intent> {
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(
+    model
+  )}:generateContent?key=${encodeURIComponent(apiKey)}`;
 
-  if (env.effectiveLlmMode === "fixture") {
-    const hit = lookupFixtureIntent(params.transcript);
-    return {
-      intent: hit ?? UNKNOWN_INTENT,
-      cacheReadTokens: 0,
-      fromFixture: true,
-    };
+  const res = await fetch(url, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    signal: AbortSignal.timeout(LLM_TIMEOUT_MS),
+    body: JSON.stringify({
+      systemInstruction: {
+        parts: [{ text: STATIC_SYSTEM_PROMPT }],
+      },
+      contents: [
+        {
+          role: "user",
+          parts: [{ text: userContent }],
+        },
+      ],
+      generationConfig: {
+        temperature: 0,
+        maxOutputTokens: 512,
+        responseMimeType: "application/json",
+      },
+    }),
+  });
+
+  if (!res.ok) {
+    throw new Error(`Gemini API ${res.status}`);
   }
 
+  const data = (await res.json()) as {
+    candidates?: Array<{
+      content?: { parts?: Array<{ text?: string }> };
+    }>;
+  };
+  const rawText = data.candidates?.[0]?.content?.parts?.[0]?.text;
+  if (!rawText) return UNKNOWN_INTENT;
+
+  const parsed = IntentSchema.safeParse(JSON.parse(rawText));
+  return parsed.success ? parsed.data : UNKNOWN_INTENT;
+}
+
+async function parseWithGroq(
+  apiKey: string,
+  model: string,
+  userContent: string
+): Promise<Intent> {
+  const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${apiKey}`,
+    },
+    signal: AbortSignal.timeout(LLM_TIMEOUT_MS),
+    body: JSON.stringify({
+      model,
+      temperature: 0,
+      max_tokens: 512,
+      response_format: { type: "json_object" },
+      messages: [
+        { role: "system", content: STATIC_SYSTEM_PROMPT },
+        { role: "user", content: userContent },
+      ],
+    }),
+  });
+
+  if (!res.ok) {
+    throw new Error(`Groq LLM API ${res.status}`);
+  }
+
+  const data = (await res.json()) as {
+    choices?: Array<{ message?: { content?: string } }>;
+  };
+  const rawText = data.choices?.[0]?.message?.content;
+  if (!rawText) return UNKNOWN_INTENT;
+
+  const parsed = IntentSchema.safeParse(JSON.parse(rawText));
+  return parsed.success ? parsed.data : UNKNOWN_INTENT;
+}
+
+async function parseWithAnthropic(
+  apiKey: string,
+  model: string,
+  userContent: string
+): Promise<{ intent: Intent; cacheReadTokens: number }> {
   const client = new Anthropic({
-    apiKey: env.ANTHROPIC_API_KEY,
+    apiKey,
     timeout: LLM_TIMEOUT_MS,
     maxRetries: 0,
   });
@@ -88,10 +160,8 @@ export async function parseWithLlm(params: {
     $refStrategy: "none",
   });
 
-  const userContent = buildRequestContext(params);
-
   const requestBody = {
-    model: env.LLM_MODEL,
+    model,
     max_tokens: 512,
     system: [
       {
@@ -112,14 +182,13 @@ export async function parseWithLlm(params: {
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const response = await client.messages.create(requestBody as any);
-
   if (response.stop_reason !== "end_turn") {
-    return { intent: UNKNOWN_INTENT, cacheReadTokens: 0, fromFixture: false };
+    return { intent: UNKNOWN_INTENT, cacheReadTokens: 0 };
   }
 
   const textBlock = response.content.find((b) => b.type === "text");
   if (!textBlock || textBlock.type !== "text") {
-    return { intent: UNKNOWN_INTENT, cacheReadTokens: 0, fromFixture: false };
+    return { intent: UNKNOWN_INTENT, cacheReadTokens: 0 };
   }
 
   const parsed = IntentSchema.safeParse(JSON.parse(textBlock.text));
@@ -130,6 +199,63 @@ export async function parseWithLlm(params: {
   return {
     intent: parsed.success ? parsed.data : UNKNOWN_INTENT,
     cacheReadTokens: usage?.cache_read_input_tokens ?? 0,
-    fromFixture: false,
   };
+}
+
+export async function parseWithLlm(params: {
+  transcript: string;
+  lang: Lang;
+  bill: Bill;
+  pendingQuestion?: Question | null;
+  customerNames: string[];
+}): Promise<{ intent: Intent; cacheReadTokens: number; fromFixture: boolean }> {
+  const env = getEnv();
+
+  if (env.effectiveLlmMode === "fixture" || env.effectiveLlmProvider === "fixture") {
+    const hit = lookupFixtureIntent(params.transcript);
+    return {
+      intent: hit ?? UNKNOWN_INTENT,
+      cacheReadTokens: 0,
+      fromFixture: true,
+    };
+  }
+
+  const userContent = buildRequestContext(params);
+
+  if (env.effectiveLlmProvider === "gemini") {
+    try {
+      const intent = await parseWithGemini(
+        env.GEMINI_API_KEY,
+        env.GEMINI_MODEL,
+        userContent
+      );
+      return { intent, cacheReadTokens: 0, fromFixture: false };
+    } catch (err) {
+      if (env.GROQ_API_KEY) {
+        const intent = await parseWithGroq(
+          env.GROQ_API_KEY,
+          env.GROQ_LLM_MODEL,
+          userContent
+        );
+        return { intent, cacheReadTokens: 0, fromFixture: false };
+      }
+      throw err;
+    }
+  }
+
+  if (env.effectiveLlmProvider === "groq") {
+    const intent = await parseWithGroq(
+      env.GROQ_API_KEY,
+      env.GROQ_LLM_MODEL,
+      userContent
+    );
+    return { intent, cacheReadTokens: 0, fromFixture: false };
+  }
+
+  const anthropicRes = await parseWithAnthropic(
+    env.ANTHROPIC_API_KEY,
+    env.LLM_MODEL,
+    userContent
+  );
+  return { ...anthropicRes, fromFixture: false };
 }

@@ -5,7 +5,7 @@ import { useEffect, useRef } from "react";
 import { getDict } from "@/i18n";
 import { useBillStore } from "@/store/bill";
 import { ReplaySttAdapter } from "@/voice/adapters/replay";
-import { SarvamSttAdapter } from "@/voice/adapters/sarvam";
+import { RecorderSttAdapter } from "@/voice/adapters/recorder";
 import type { SttAdapter } from "@/voice/adapters/types";
 import { WebSpeechSttAdapter } from "@/voice/adapters/webspeech";
 import { prewarmTts, speakReadback } from "@/voice/tts";
@@ -14,7 +14,7 @@ export function MicButton({
   sttProvider,
   ttsProvider,
 }: {
-  sttProvider: "sarvam" | "webspeech" | "replay";
+  sttProvider: "groq" | "sarvam" | "webspeech" | "replay";
   ttsProvider: "sarvam" | "browser";
 }) {
   const {
@@ -40,9 +40,9 @@ export function MicButton({
   }, [setOnReadback, ttsProvider]);
 
   function getAdapter(): SttAdapter {
-    if (sttProvider === "sarvam") {
-      const s = new SarvamSttAdapter();
-      if (s.isSupported()) return s;
+    if (sttProvider === "groq" || sttProvider === "sarvam") {
+      const rec = new RecorderSttAdapter(sttProvider);
+      if (rec.isSupported()) return rec;
     }
     if (sttProvider === "webspeech") {
       const ws = new WebSpeechSttAdapter();
