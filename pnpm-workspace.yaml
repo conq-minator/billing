@@ -1,0 +1,4 @@
+dangerouslyAllowAllBuilds: true
+onlyBuiltDependencies:
+  - esbuild
+  - sharp

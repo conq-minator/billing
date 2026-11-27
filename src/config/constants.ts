@@ -1,0 +1,12 @@
+export const DISCOUNT_LEARN_MIN_ANSWERS = 5;
+export const DISCOUNT_LEARN_AGREEMENT = 0.8;
+export const MIN_INTENT_CONFIDENCE = 0.6;
+export const ROUND_OFF_TO_PAISE = 100;
+export const FUSE_ITEM_THRESHOLD = 0.35;
+export const LLM_TIMEOUT_MS = 2500;
+export const VAD_TRAILING_SILENCE_MS = 700;
+export const MAX_VOICE_EVENTS_DEBUG = 50;
+export const MAX_CUSTOMERS_IN_PROMPT = 50;
+export const SHOP_TIMEZONE = "Asia/Kolkata";
+export const BILL_NO_PAD_LENGTH = 4;
+export const PUBLIC_ID_LENGTH = 12;
