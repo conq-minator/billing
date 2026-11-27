@@ -8,17 +8,17 @@
 
 | | |
 |---|---|
-| **Phase** | M1 Core loop complete — starting M2 Money |
-| **Current milestone** | M2 — Money |
-| **Next task** | M2.1 Discount engine |
-| **Acceptance tests green** | 7 / 16 (AT-01..AT-06, AT-10 automated; AT-07..AT-09, AT-11..AT-16 in M2–M4) |
-| **Demo-ready** | Partial (core voice/text billing loop works) |
+| **Phase** | M2 Money complete — starting M3 Hisaab |
+| **Current milestone** | M3 — Hisaab |
+| **Next task** | M3.1 Ledger queries + `/api/ledger/*` |
+| **Acceptance tests green** | 12 / 16 (AT-01..AT-10, AT-12, AT-16 automated; AT-11 manual; AT-13..AT-15 in M3–M4) |
+| **Demo-ready** | Partial |
 | **Last updated** | 2026-11-27 |
 
 ### Milestone checklist
 - [x] M0 Scaffold
 - [x] M1 Core loop
-- [ ] M2 Money
+- [x] M2 Money
 - [ ] M3 Hisaab
 - [ ] M4 Polish & demo safety
 
@@ -63,6 +63,15 @@ Template — copy for every session / commit:
 - **Decisions / issues:** links to D-xxx / Q-xxx added
 - **Next:** the next task
 -->
+
+### S-004 · 2026-11-27 · M2 Money complete
+- **Milestone/task:** M2.1–M2.7
+- **Changed:** Implemented discount engine (percent/flat/target_total, whole/items/unspecified), discount scope learning + correction handling, payments (cash/UPI/udhaar/split) + customer fuzzy attach, UPI URI + QR sheet, shared `toBillViewModel`, PDF (`@react-pdf/renderer`), PNG (`next/og`), 58 mm print route, public `/b/:publicId` page, WhatsApp share link builder, and bill reopen/versioning.
+- **Files:** `src/engine/discount.ts`, `src/engine/discountLearning.ts`, `src/engine/payment.ts`, `src/engine/apply.ts`, `src/bill/*`, `src/lib/whatsapp.ts`, `src/components/UpiQrSheet.tsx`, `src/app/b/[publicId]/page.tsx`, `src/app/print/[id]/page.tsx`, `src/app/api/bills/[id]/{pdf,png}/*`, `tests/unit/m2-*.test.ts`, `tests/acceptance/m2.money.spec.ts`
+- **Tests:** `typecheck`, `lint`, `test` (77/77), `m2.money.spec.ts` (AT-07, AT-08, AT-09, AT-12, AT-16) green.
+- **Commit:** local commit on `master` (no remote/push)
+- **Decisions / issues:** None
+- **Next:** M3.1 Ledger queries + `/api/ledger/*`
 
 ### S-003 · 2026-11-27 · M1 Core loop complete
 - **Milestone/task:** M1.1–M1.13

@@ -10,6 +10,7 @@ import { LiveBill } from "./LiveBill";
 import { PendingChip } from "./PendingChip";
 import { TopBar } from "./TopBar";
 import { TranscriptStrip } from "./TranscriptStrip";
+import { UpiQrSheet } from "./UpiQrSheet";
 
 declare global {
   interface Window {
@@ -27,6 +28,7 @@ export function CounterScreen({
   const { bill, loading, toast, clearToast, init, submitTranscript } =
     useBillStore();
   const [editingLine, setEditingLine] = useState<BillLine | null>(null);
+  const [qrOpen, setQrOpen] = useState(false);
   const [showDebugBox, setShowDebugBox] = useState(demoMode);
 
   useEffect(() => {
@@ -89,7 +91,7 @@ export function CounterScreen({
           <PendingChip />
           <ClarifyChip />
           <TranscriptStrip showDebugBox={showDebugBox} />
-          <ActionBar />
+          <ActionBar onOpenQr={() => setQrOpen(true)} />
           {micSlot}
         </section>
       </main>
@@ -98,6 +100,7 @@ export function CounterScreen({
         line={editingLine}
         onClose={() => setEditingLine(null)}
       />
+      <UpiQrSheet open={qrOpen} onClose={() => setQrOpen(false)} />
     </div>
   );
 }

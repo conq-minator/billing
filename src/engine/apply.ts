@@ -4,7 +4,10 @@ import { formatInrCompact, paiseToDecimalString } from "@/lib/money";
 import { roundQty } from "@/lib/qty";
 import type { Intent } from "@/router/intent.schema";
 import { fillPrice } from "./fillPrice";
+import { applyDiscountIntent } from "./discount";
+import { recordDiscountScopeAnswer } from "./discountLearning";
 import { normalizeItemName } from "./normalize";
+import { applyPaymentIntent, resolveOrCreateCustomer } from "./payment";
 import { pendingQuestions } from "./pending";
 import { readbackBillItems, readbackFinish } from "./readback";
 import { resolveItem } from "./resolveItem";
@@ -278,7 +281,12 @@ export function apply(intent: Intent, ctx: EngineContext): EngineResult {
   if (intent.intent === "ANSWER_PENDING_QUESTION") {
     const queue = pendingQuestions(bill, ctx.lang);
     const head = queue[0];
-    if (head && head.kind === "price" && intent.answer?.price !== null && intent.answer?.price !== undefined) {
+    if (
+      head &&
+      head.kind === "price" &&
+      intent.answer?.price !== null &&
+      intent.answer?.price !== undefined
+    ) {
       const line = bill.lines.find((l) => l.id === head.lineId);
       const item = workingCatalogue.find((c) => c.id === head.itemId);
       if (line && item) {
@@ -317,11 +325,199 @@ export function apply(intent: Intent, ctx: EngineContext): EngineResult {
       }
     }
 
+    if (head && head.kind === "discount_scope" && intent.answer?.scope) {
+      const stashed = bill.sessionState.lastAutoScope;
+      bill.sessionState.pendingQueue = (
+        bill.sessionState.pendingQueue ?? []
+      ).filter((q) => q.kind !== "discount_scope");
+
+      const nextPrefs = recordDiscountScopeAnswer(
+        ctx.prefs,
+        intent.answer.scope,
+        false,
+        ctx.now
+      );
+      effects.push({ type: "savePrefs", prefs: nextPrefs });
+
+      const discRes = applyDiscountIntent({
+        bill,
+        intent: {
+          ...intent,
+          intent: "APPLY_DISCOUNT",
+          discount: stashed
+            ? {
+                kind: stashed.discountKind,
+                value: stashed.discountValue,
+                scope: intent.answer.scope,
+                item_names: intent.answer.item_names ?? [],
+                is_correction: false,
+              }
+            : null,
+        },
+        catalogue: workingCatalogue,
+        prefs: nextPrefs,
+        lang: ctx.lang,
+        now: ctx.now,
+      });
+
+      return {
+        bill: discRes.bill,
+        effects: [...effects, ...discRes.effects],
+        question: discRes.question,
+        readback: discRes.readback
+          ? { text: discRes.readback, lang: ctx.lang }
+          : undefined,
+      };
+    }
+
+    if (
+      head &&
+      head.kind === "discount_items" &&
+      intent.answer?.item_names &&
+      intent.answer.item_names.length > 0
+    ) {
+      const stashed = bill.sessionState.lastAutoScope;
+      bill.sessionState.pendingQueue = (
+        bill.sessionState.pendingQueue ?? []
+      ).filter((q) => q.kind !== "discount_items");
+
+      const discRes = applyDiscountIntent({
+        bill,
+        intent: {
+          ...intent,
+          intent: "APPLY_DISCOUNT",
+          discount: stashed
+            ? {
+                kind: stashed.discountKind,
+                value: stashed.discountValue,
+                scope: "items",
+                item_names: intent.answer.item_names,
+                is_correction: false,
+              }
+            : null,
+        },
+        catalogue: workingCatalogue,
+        prefs: ctx.prefs,
+        lang: ctx.lang,
+        now: ctx.now,
+      });
+      return {
+        bill: discRes.bill,
+        effects: [...effects, ...discRes.effects],
+        question: discRes.question,
+        readback: discRes.readback
+          ? { text: discRes.readback, lang: ctx.lang }
+          : undefined,
+      };
+    }
+
+    if (head && head.kind === "udhaar_customer" && intent.answer?.customer) {
+      bill.sessionState.pendingQueue = (
+        bill.sessionState.pendingQueue ?? []
+      ).filter((q) => q.kind !== "udhaar_customer");
+
+      const payRes = applyPaymentIntent({
+        bill,
+        intent: {
+          ...intent,
+          intent: "RECORD_PAYMENT",
+          customer: { name: intent.answer.customer },
+          payment: { mode: "due", amount: null },
+        },
+        customers: ctx.customers,
+        lang: ctx.lang,
+        now: ctx.now,
+        shopId: ctx.shopId,
+      });
+      return {
+        bill: payRes.bill,
+        effects: [...effects, ...payRes.effects],
+        readback: payRes.readback
+          ? { text: payRes.readback, lang: ctx.lang }
+          : undefined,
+      };
+    }
+
     return {
       bill: ctx.bill,
       effects: [],
       readback: { text: dict.readback.clarify, lang: ctx.lang },
       clarify: { transcript: "" },
+    };
+  }
+
+  if (intent.intent === "APPLY_DISCOUNT") {
+    const discRes = applyDiscountIntent({
+      bill,
+      intent,
+      catalogue: workingCatalogue,
+      prefs: ctx.prefs,
+      lang: ctx.lang,
+      now: ctx.now,
+    });
+    return {
+      bill: discRes.bill,
+      effects: [...effects, ...discRes.effects],
+      question: discRes.question,
+      readback: discRes.readback
+        ? { text: discRes.readback, lang: ctx.lang }
+        : undefined,
+    };
+  }
+
+  if (intent.intent === "SET_CUSTOMER") {
+    if (intent.customer?.name) {
+      const { customer, isNew } = resolveOrCreateCustomer(
+        intent.customer.name,
+        ctx.customers,
+        ctx.shopId
+      );
+      bill.customerId = customer.id;
+      bill.customerName = customer.name;
+      if (isNew) {
+        effects.push({
+          type: "upsertCustomer",
+          c: { ...customer, isNew: true },
+        });
+      }
+    }
+    if (intent.payment) {
+      const payRes = applyPaymentIntent({
+        bill,
+        intent,
+        customers: ctx.customers,
+        lang: ctx.lang,
+        now: ctx.now,
+        shopId: ctx.shopId,
+      });
+      return {
+        bill: payRes.bill,
+        effects: [...effects, ...payRes.effects],
+        question: payRes.question,
+        readback: payRes.readback
+          ? { text: payRes.readback, lang: ctx.lang }
+          : undefined,
+      };
+    }
+    return { bill, effects };
+  }
+
+  if (intent.intent === "RECORD_PAYMENT") {
+    const payRes = applyPaymentIntent({
+      bill,
+      intent,
+      customers: ctx.customers,
+      lang: ctx.lang,
+      now: ctx.now,
+      shopId: ctx.shopId,
+    });
+    return {
+      bill: payRes.bill,
+      effects: [...effects, ...payRes.effects],
+      question: payRes.question,
+      readback: payRes.readback
+        ? { text: payRes.readback, lang: ctx.lang }
+        : undefined,
     };
   }
 

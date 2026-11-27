@@ -70,19 +70,19 @@ Definition of done for **every** task: *Done when* passes · `pnpm typecheck && 
 
 ## M2 — Money (≈ 1.5 days)
 
-- [ ] **M2.1 Discount engine:** percent/flat on whole bill and items, target total, remove; discount lines in view.
+- [x] **M2.1 Discount engine:** percent/flat on whole bill and items, target total, remove; discount lines in view.
   *Done when:* AT-09 passes; item + bill discount math matches PRD §9 sample (₹623.00).
-- [ ] **M2.2 Ambiguity question + learning + correction + Settings reset** (constants-driven).
+- [x] **M2.2 Ambiguity question + learning + correction + Settings reset** (constants-driven).
   *Done when:* AT-07, AT-08 pass (engine + Playwright); `trained` profile skips the question.
-- [ ] **M2.3 Payments:** UPI (QR sheet + "Received"), cash, udhaar (ask "Kiske naam pe?"), partial; customer attach by voice ("Sharma ji ka bill") with fuzzy match/create.
+- [x] **M2.3 Payments:** UPI (QR sheet + "Received"), cash, udhaar (ask "Kiske naam pe?"), partial; customer attach by voice ("Sharma ji ka bill") with fuzzy match/create.
   *Done when:* AT-12 passes; customer balance correct in DB.
-- [ ] **M2.4 UPI URI + QR** (`bill/upi.ts`, tested encoding).
+- [x] **M2.4 UPI URI + QR** (`bill/upi.ts`, tested encoding).
   *Done when:* AT-11 manual scan succeeds in GPay, PhonePe, Paytm with exact amount (log result in MEMORY.md).
-- [ ] **M2.5 View-model + exports:** `toBillViewModel`, PDF, PNG, 58 mm print, public `/b/:publicId` page with Pay-with-UPI button.
+- [x] **M2.5 View-model + exports:** `toBillViewModel`, PDF, PNG, 58 mm print, public `/b/:publicId` page with Pay-with-UPI button.
   *Done when:* all four renderings show identical numbers to the screen for the PRD §9 sample (snapshot test).
-- [ ] **M2.6 WhatsApp share** (wa.me + Web Share API with PNG; customer phone via saved / Contact Picker / typed).
+- [x] **M2.6 WhatsApp share** (wa.me + Web Share API with PNG; customer phone via saved / Contact Picker / typed).
   *Done when:* on Android, share opens WhatsApp with message + https link.
-- [ ] **M2.7 Reopen & edit finalised bill** (status `edited`, `bill_versions`, same bill no., re-export).
+- [x] **M2.7 Reopen & edit finalised bill** (status `edited`, `bill_versions`, same bill no., re-export).
   *Done when:* AT-16 passes.
 
 ## M3 — Hisaab (≈ 1 day)

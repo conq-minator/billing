@@ -6,7 +6,7 @@ import { getDict } from "@/i18n";
 import { useBillStore } from "@/store/bill";
 
 export function PendingChip() {
-  const { pendingQuestion, lang, sendCommand } = useBillStore();
+  const { pendingQuestion, lang, sendCommand, submitTranscript } = useBillStore();
   const dict = getDict(lang);
   const [priceInput, setPriceInput] = useState("");
 
@@ -54,6 +54,27 @@ export function PendingChip() {
             {dict.counter.save}
           </button>
         </form>
+      )}
+
+      {pendingQuestion.kind === "discount_scope" && (
+        <div className="mt-2 flex gap-2">
+          <button
+            type="button"
+            onClick={() => submitTranscript("poore bill pe")}
+            data-testid="pending-scope-whole"
+            className="min-h-[44px] flex-1 rounded-xl bg-amber-600 px-3 text-sm font-semibold text-white hover:bg-amber-700"
+          >
+            {dict.readback.scopeWhole}
+          </button>
+          <button
+            type="button"
+            onClick={() => submitTranscript("kisi item pe")}
+            data-testid="pending-scope-items"
+            className="min-h-[44px] flex-1 rounded-xl border border-amber-300 bg-white px-3 text-sm font-semibold text-amber-950 hover:bg-amber-100"
+          >
+            {dict.readback.scopeItems}
+          </button>
+        </div>
       )}
     </div>
   );
