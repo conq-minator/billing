@@ -33,37 +33,37 @@ Definition of done for **every** task: *Done when* passes · `pnpm typecheck && 
 ## M1 — Core loop (must be bug-free) (≈ 2 days)
 
 ### Engine (pure, TDD) — write tests from PRD tables first
-- [ ] **M1.1 Lexicon + normaliser + number words** (hi + bn): aadha, paav, sawa, dedh, dhai, saadhe, paune, sau; Bengali equivalents; transliteration to Latin.
+- [x] **M1.1 Lexicon + normaliser + number words** (hi + bn): aadha, paav, sawa, dedh, dhai, saadhe, paune, sau; Bengali equivalents; transliteration to Latin.
   *Done when:* table-driven tests for every row of PRD FR-5.2 pass.
-- [ ] **M1.2 Units + conversion** (mass/volume/count families; incompatible → null).
+- [x] **M1.2 Units + conversion** (mass/volume/count families; incompatible → null).
   *Done when:* 500 g @ ₹52/kg = ₹26.00; pkt ↔ kg = null.
-- [ ] **M1.3 resolveItem** (alias → exact → Fuse.js; new-item creation).
+- [x] **M1.3 resolveItem** (alias → exact → Fuse.js; new-item creation).
   *Done when:* "arhar dal"→Toor Dal, "Surf"→Surf Excel, "doodh"→Amul Taaza, "Kurkure"→new item.
-- [ ] **M1.4 fillPrice + learnPrice + price_basis rule** (PRD FR-6.1–6.4, one-time override).
+- [x] **M1.4 fillPrice + learnPrice + price_basis rule** (PRD FR-6.1–6.4, one-time override).
   *Done when:* AT-03 / AT-04 / AT-05 / AT-06 pass at engine level.
-- [ ] **M1.5 Line edits** (EDIT_LINE, REMOVE_LINE, SET_PRICE, "last" reference, add).
+- [x] **M1.5 Line edits** (EDIT_LINE, REMOVE_LINE, SET_PRICE, "last" reference, add).
   *Done when:* AT-10 passes at engine level.
-- [ ] **M1.6 computeTotals + pendingQuestions + FINISH flow + readback templates.**
+- [x] **M1.6 computeTotals + pendingQuestions + FINISH flow + readback templates.**
   *Done when:* AT-01, AT-02 pass at engine level; finish with unknown price yields the "Kurkure ka rate?" question.
 
 ### Router
-- [ ] **M1.7 Intent schema + fast path** (ARCHITECTURE §5.1, §5.3).
+- [x] **M1.7 Intent schema + fast path** (ARCHITECTURE §5.1, §5.3).
   *Done when:* fast-path fixtures pass for finish/payment/pending answers in hi + bn.
-- [ ] **M1.8 LLM parser.** Prompt (rules, number tables, ~30 few-shots), Claude call per TECH_STACK §3 (structured output → Zod), confidence guard, timeout → fast-path fallback, `LLM_MODE=fixture` record/replay.
+- [x] **M1.8 LLM parser.** Prompt (rules, number tables, ~30 few-shots), Claude call per TECH_STACK §3 (structured output → Zod), confidence guard, timeout → fast-path fallback, `LLM_MODE=fixture` record/replay.
   *Done when:* `tests/eval/parser.eval.ts` (live, manual) scores ≥ 95% on `tests/fixtures/utterances/*.hi.json`; recorded fixtures committed.
 
 ### API + UI (text-first)
-- [ ] **M1.9 Repository + `/api/utterance` + `/api/bills/*/commands`** with per-bill serial processing (row lock, `clientSeq`), single transaction, `voice_events` logging.
+- [x] **M1.9 Repository + `/api/utterance` + `/api/bills/*/commands`** with per-bill serial processing (row lock, `clientSeq`), single transaction, `voice_events` logging.
   *Done when:* integration test posts AT-01 transcript and gets the expected bill JSON.
-- [ ] **M1.10 Counter screen (text input).** TopBar, LiveBill with badges + animations, TranscriptStrip, debug text box, PendingChip, ClarifyChip, toasts, Done / New bill.
+- [x] **M1.10 Counter screen (text input).** TopBar, LiveBill with badges + animations, TranscriptStrip, debug text box, PendingChip, ClarifyChip, toasts, Done / New bill.
   *Done when:* Playwright AT-01…AT-06, AT-10 pass via transcript injection on phone + tablet viewports.
-- [ ] **M1.11 Tap-to-edit.** LineEditSheet (item, qty, unit, rate, "only this bill" toggle, remove), swipe-to-delete, number pad for pending price.
+- [x] **M1.11 Tap-to-edit.** LineEditSheet (item, qty, unit, rate, "only this bill" toggle, remove), swipe-to-delete, number pad for pending price.
   *Done when:* AT-04 passes by tapping.
 
 ### Voice (plug in the mic)
-- [ ] **M1.12 Audio capture + STT adapters** (`sarvam`, `webspeech`, `replay`) + hold-to-talk MicButton + partial transcripts.
+- [x] **M1.12 Audio capture + STT adapters** (`sarvam`, `webspeech`, `replay`) + hold-to-talk MicButton + partial transcripts.
   *Done when:* on a real Android phone over HTTPS, AT-01 spoken in Hinglish produces 5 lines; p95 latency logged ≤ 1.5 s.
-- [ ] **M1.13 TTS readbacks** (Sarvam + browser fallback, phrase cache, pre-warm).
+- [x] **M1.13 TTS readbacks** (Sarvam + browser fallback, phrase cache, pre-warm).
   *Done when:* finish readback is spoken in < 600 ms after response for cached phrases.
 
 **M1 exit gate:** full spoken bill on a phone, 3 runs in a row, zero errors. Record a screen capture for BUILT_WITH_FLOW.md.

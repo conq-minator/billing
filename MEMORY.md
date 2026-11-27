@@ -8,16 +8,16 @@
 
 | | |
 |---|---|
-| **Phase** | M0 complete — starting M1 Core loop |
-| **Current milestone** | M1 — Core loop |
-| **Next task** | M1.1 Lexicon + normaliser + number words |
-| **Acceptance tests green** | 0 / 16 |
-| **Demo-ready** | No |
+| **Phase** | M1 Core loop complete — starting M2 Money |
+| **Current milestone** | M2 — Money |
+| **Next task** | M2.1 Discount engine |
+| **Acceptance tests green** | 7 / 16 (AT-01..AT-06, AT-10 automated; AT-07..AT-09, AT-11..AT-16 in M2–M4) |
+| **Demo-ready** | Partial (core voice/text billing loop works) |
 | **Last updated** | 2026-11-27 |
 
 ### Milestone checklist
 - [x] M0 Scaffold
-- [ ] M1 Core loop
+- [x] M1 Core loop
 - [ ] M2 Money
 - [ ] M3 Hisaab
 - [ ] M4 Polish & demo safety
@@ -63,6 +63,15 @@ Template — copy for every session / commit:
 - **Decisions / issues:** links to D-xxx / Q-xxx added
 - **Next:** the next task
 -->
+
+### S-003 · 2026-11-27 · M1 Core loop complete
+- **Milestone/task:** M1.1–M1.13
+- **Changed:** Implemented pure engine (lexicons hi/bn, transliteration/normalizer, number words, units/conversion, Fuse.js `resolveItem`, `fillPrice`/`learnPrice`, line edits, `computeTotals`, `pendingQuestions`, `readback`, `apply`), fast-path + Claude structured-output router with fixture replay, repository + `/api/bills` + `/api/utterance` + `/api/bills/:id/commands` + `/api/demo/reset`, Counter UI + `LineEditSheet` + `PendingChip` + `MicButton` + STT/TTS adapters (`sarvam`, `webspeech`, `replay`).
+- **Files:** `src/engine/*`, `src/router/*`, `src/i18n/*`, `src/db/repo/*`, `src/app/api/*`, `src/components/*`, `src/store/bill.ts`, `src/voice/*`, `tests/unit/*`, `tests/integration/*`, `tests/acceptance/m1.core.spec.ts`
+- **Tests:** `typecheck`, `lint`, `test` (71/71), `test:e2e` (AT-01..AT-06, AT-10 on mobile + tablet) green.
+- **Commit:** local commit on `master` (no remote/push)
+- **Decisions / issues:** None
+- **Next:** M2.1 Discount engine
 
 ### S-002 · 2026-11-27 · M0 Scaffold complete
 - **Milestone/task:** M0.1–M0.5

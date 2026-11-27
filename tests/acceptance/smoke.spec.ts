@@ -1,6 +1,7 @@
 import { expect, test } from "@playwright/test";
 
-test("home page renders Boli-Quote", async ({ page }) => {
+test("home page renders counter screen", async ({ page }) => {
   await page.goto("/");
-  await expect(page.getByRole("heading", { name: "Boli-Quote" })).toBeVisible();
+  await expect(page.getByTestId("mic-button")).toBeVisible();
+  await expect(page.getByTestId("action-new-bill")).toBeVisible();
 });

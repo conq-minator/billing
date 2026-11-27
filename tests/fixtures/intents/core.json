@@ -1,0 +1,288 @@
+{
+  "Aashirvaad atta 5 kilo, toor dal 1 kilo, Maggi 4 packet, Amul doodh 2, Surf ek": {
+    "intent": "ADD_ITEMS",
+    "items": [
+      { "name": "Aashirvaad atta", "qty": 5, "unit": "kg", "price": null, "price_basis": null },
+      { "name": "toor dal", "qty": 1, "unit": "kg", "price": null, "price_basis": null },
+      { "name": "Maggi", "qty": 4, "unit": "pkt", "price": null, "price_basis": null },
+      { "name": "Amul doodh", "qty": 2, "unit": null, "price": null, "price_basis": null },
+      { "name": "Surf", "qty": 1, "unit": null, "price": null, "price_basis": null }
+    ],
+    "target_line": null,
+    "changes": null,
+    "discount": null,
+    "customer": null,
+    "payment": null,
+    "query": null,
+    "answer": null,
+    "language": "hinglish",
+    "confidence": 0.98
+  },
+  "Dal": {
+    "intent": "ADD_ITEMS",
+    "items": [
+      { "name": "Dal", "qty": 1, "unit": null, "price": null, "price_basis": null }
+    ],
+    "target_line": null,
+    "changes": null,
+    "discount": null,
+    "customer": null,
+    "payment": null,
+    "query": null,
+    "answer": null,
+    "language": "hinglish",
+    "confidence": 0.99
+  },
+  "Kurkure 3 packet": {
+    "intent": "ADD_ITEMS",
+    "items": [
+      { "name": "Kurkure", "qty": 3, "unit": "pkt", "price": null, "price_basis": null }
+    ],
+    "target_line": null,
+    "changes": null,
+    "discount": null,
+    "customer": null,
+    "payment": null,
+    "query": null,
+    "answer": null,
+    "language": "hinglish",
+    "confidence": 0.97
+  },
+  "Atta 58 ka, sirf is baar": {
+    "intent": "SET_PRICE",
+    "items": [],
+    "target_line": { "ref": "name", "name": "Atta" },
+    "changes": { "qty": null, "unit": null, "price": 58, "one_time": true, "remove_discount": false },
+    "discount": null,
+    "customer": null,
+    "payment": null,
+    "query": null,
+    "answer": null,
+    "language": "hinglish",
+    "confidence": 0.96
+  },
+  "Paav kilo jeera": {
+    "intent": "ADD_ITEMS",
+    "items": [
+      { "name": "jeera", "qty": 0.25, "unit": "kg", "price": null, "price_basis": null }
+    ],
+    "target_line": null,
+    "changes": null,
+    "discount": null,
+    "customer": null,
+    "payment": null,
+    "query": null,
+    "answer": null,
+    "language": "hinglish",
+    "confidence": 0.98
+  },
+  "Chawal hata do": {
+    "intent": "REMOVE_LINE",
+    "items": [],
+    "target_line": { "ref": "name", "name": "Chawal" },
+    "changes": null,
+    "discount": null,
+    "customer": null,
+    "payment": null,
+    "query": null,
+    "answer": null,
+    "language": "hinglish",
+    "confidence": 0.98
+  },
+  "dal 2 kilo kar do": {
+    "intent": "EDIT_LINE",
+    "items": [],
+    "target_line": { "ref": "name", "name": "dal" },
+    "changes": { "qty": 2, "unit": "kg", "price": null, "one_time": false, "remove_discount": false },
+    "discount": null,
+    "customer": null,
+    "payment": null,
+    "query": null,
+    "answer": null,
+    "language": "hinglish",
+    "confidence": 0.97
+  },
+  "nahi nahi ek hi": {
+    "intent": "EDIT_LINE",
+    "items": [],
+    "target_line": { "ref": "last", "name": null },
+    "changes": { "qty": 1, "unit": null, "price": null, "one_time": false, "remove_discount": false },
+    "discount": null,
+    "customer": null,
+    "payment": null,
+    "query": null,
+    "answer": null,
+    "language": "hinglish",
+    "confidence": 0.95
+  },
+  "Chawal 2 kilo, dal 1 kilo": {
+    "intent": "ADD_ITEMS",
+    "items": [
+      { "name": "Chawal", "qty": 2, "unit": "kg", "price": null, "price_basis": null },
+      { "name": "dal", "qty": 1, "unit": "kg", "price": null, "price_basis": null }
+    ],
+    "target_line": null,
+    "changes": null,
+    "discount": null,
+    "customer": null,
+    "payment": null,
+    "query": null,
+    "answer": null,
+    "language": "hinglish",
+    "confidence": 0.98
+  },
+  "20% discount": {
+    "intent": "APPLY_DISCOUNT",
+    "items": [],
+    "target_line": null,
+    "changes": null,
+    "discount": { "kind": "percent", "value": 20, "scope": "unspecified", "item_names": [], "is_correction": false },
+    "customer": null,
+    "payment": null,
+    "query": null,
+    "answer": null,
+    "language": "hinglish",
+    "confidence": 0.97
+  },
+  "nahi, 20% sirf dal aur chawal pe tha": {
+    "intent": "APPLY_DISCOUNT",
+    "items": [],
+    "target_line": null,
+    "changes": null,
+    "discount": { "kind": "percent", "value": 20, "scope": "items", "item_names": ["dal", "chawal"], "is_correction": true },
+    "customer": null,
+    "payment": null,
+    "query": null,
+    "answer": null,
+    "language": "hinglish",
+    "confidence": 0.95
+  },
+  "Total 950 kar do": {
+    "intent": "APPLY_DISCOUNT",
+    "items": [],
+    "target_line": null,
+    "changes": null,
+    "discount": { "kind": "target_total", "value": 950, "scope": "whole", "item_names": [], "is_correction": false },
+    "customer": null,
+    "payment": null,
+    "query": null,
+    "answer": null,
+    "language": "hinglish",
+    "confidence": 0.97
+  },
+  "Sharma ji ka bill, 500 diya baaki udhaar": {
+    "intent": "RECORD_PAYMENT",
+    "items": [],
+    "target_line": null,
+    "changes": null,
+    "discount": null,
+    "customer": { "name": "Sharma ji" },
+    "payment": { "mode": "split", "amount": 500 },
+    "query": null,
+    "answer": null,
+    "language": "hinglish",
+    "confidence": 0.96
+  },
+  "Sharma ji ko reminder bhejo": {
+    "intent": "SEND_REMINDER",
+    "items": [],
+    "target_line": null,
+    "changes": null,
+    "discount": null,
+    "customer": { "name": "Sharma ji" },
+    "payment": null,
+    "query": null,
+    "answer": null,
+    "language": "hinglish",
+    "confidence": 0.97
+  },
+  "Kis-kis ka paisa baaki hai?": {
+    "intent": "QUERY_LEDGER",
+    "items": [],
+    "target_line": null,
+    "changes": null,
+    "discount": null,
+    "customer": null,
+    "payment": null,
+    "query": { "type": "dues_list", "customer": null, "item": null },
+    "answer": null,
+    "language": "hinglish",
+    "confidence": 0.97
+  },
+  "Atta pichli baar kitne ka diya?": {
+    "intent": "QUERY_PRICE",
+    "items": [],
+    "target_line": null,
+    "changes": null,
+    "discount": null,
+    "customer": null,
+    "payment": null,
+    "query": { "type": "item_price_history", "customer": null, "item": "Atta" },
+    "answer": null,
+    "language": "hinglish",
+    "confidence": 0.96
+  },
+  "Sharma ji ne 500 diya": {
+    "intent": "RECORD_PAYMENT",
+    "items": [],
+    "target_line": null,
+    "changes": null,
+    "discount": null,
+    "customer": { "name": "Sharma ji" },
+    "payment": { "mode": "cash", "amount": 500 },
+    "query": null,
+    "answer": null,
+    "language": "hinglish",
+    "confidence": 0.96
+  },
+  "Atta du kilo, dal ek kilo": {
+    "intent": "ADD_ITEMS",
+    "items": [
+      { "name": "Atta", "qty": 2, "unit": "kg", "price": null, "price_basis": null },
+      { "name": "dal", "qty": 1, "unit": "kg", "price": null, "price_basis": null }
+    ],
+    "target_line": null,
+    "changes": null,
+    "discount": null,
+    "customer": null,
+    "payment": null,
+    "query": null,
+    "answer": null,
+    "language": "bn",
+    "confidence": 0.97
+  },
+  "Aashirvaad atta panch kilo, toor dal ek kilo, Maggi char packet, Amul doodh dui, Surf ek": {
+    "intent": "ADD_ITEMS",
+    "items": [
+      { "name": "Aashirvaad atta", "qty": 5, "unit": "kg", "price": null, "price_basis": null },
+      { "name": "toor dal", "qty": 1, "unit": "kg", "price": null, "price_basis": null },
+      { "name": "Maggi", "qty": 4, "unit": "pkt", "price": null, "price_basis": null },
+      { "name": "Amul doodh", "qty": 2, "unit": null, "price": null, "price_basis": null },
+      { "name": "Surf", "qty": 1, "unit": null, "price": null, "price_basis": null }
+    ],
+    "target_line": null,
+    "changes": null,
+    "discount": null,
+    "customer": null,
+    "payment": null,
+    "query": null,
+    "answer": null,
+    "language": "bn",
+    "confidence": 0.97
+  },
+  "Kurkure tin packet": {
+    "intent": "ADD_ITEMS",
+    "items": [
+      { "name": "Kurkure", "qty": 3, "unit": "pkt", "price": null, "price_basis": null }
+    ],
+    "target_line": null,
+    "changes": null,
+    "discount": null,
+    "customer": null,
+    "payment": null,
+    "query": null,
+    "answer": null,
+    "language": "bn",
+    "confidence": 0.97
+  }
+}

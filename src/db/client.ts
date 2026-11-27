@@ -8,24 +8,26 @@ export type AppDb =
   | PgliteDatabase<typeof schema>
   | NodePgDatabase<typeof schema>;
 
-let dbInstance: AppDb | null = null;
-let pgliteInstance: PGlite | null = null;
-let pgPool: Pool | null = null;
+const globalForDb = globalThis as unknown as {
+  __boliDb?: AppDb;
+  __boliPglite?: PGlite;
+  __boliPgPool?: Pool;
+};
 
 export function getDb(): AppDb {
-  if (dbInstance) return dbInstance;
+  if (globalForDb.__boliDb) return globalForDb.__boliDb;
 
   const databaseUrl = process.env.DATABASE_URL?.trim();
   if (databaseUrl) {
-    pgPool = new Pool({ connectionString: databaseUrl });
-    dbInstance = drizzlePg(pgPool, { schema });
-    return dbInstance;
+    globalForDb.__boliPgPool = new Pool({ connectionString: databaseUrl });
+    globalForDb.__boliDb = drizzlePg(globalForDb.__boliPgPool, { schema });
+    return globalForDb.__boliDb;
   }
 
   const dataDir = process.env.PGLITE_DIR || "./.pglite";
-  pgliteInstance = new PGlite(dataDir);
-  dbInstance = drizzlePglite(pgliteInstance, { schema });
-  return dbInstance;
+  globalForDb.__boliPglite = new PGlite(dataDir);
+  globalForDb.__boliDb = drizzlePglite(globalForDb.__boliPglite, { schema });
+  return globalForDb.__boliDb;
 }
 
 export async function createMemoryDb(): Promise<{
@@ -38,13 +40,13 @@ export async function createMemoryDb(): Promise<{
 }
 
 export async function closeDb(): Promise<void> {
-  if (pgPool) {
-    await pgPool.end();
-    pgPool = null;
+  if (globalForDb.__boliPgPool) {
+    await globalForDb.__boliPgPool.end();
+    globalForDb.__boliPgPool = undefined;
   }
-  if (pgliteInstance) {
-    await pgliteInstance.close();
-    pgliteInstance = null;
+  if (globalForDb.__boliPglite) {
+    await globalForDb.__boliPglite.close();
+    globalForDb.__boliPglite = undefined;
   }
-  dbInstance = null;
+  globalForDb.__boliDb = undefined;
 }
