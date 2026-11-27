@@ -16,13 +16,12 @@ const EnvSchema = z.object({
   LLM_MODEL: z.string().default("claude-opus-5-5"),
   LLM_MODE: z.enum(["live", "fixture"]).default("live"),
   STT_PROVIDER: z
-    .enum(["auto", "gemini", "groq", "sarvam", "webspeech", "replay"])
+    .enum(["auto", "gemini", "groq", "webspeech", "replay"])
     .default("auto"),
-  TTS_PROVIDER: z.enum(["auto", "gemini", "sarvam", "browser"]).default("auto"),
-  SARVAM_API_KEY: z.string().optional().default(""),
+  TTS_PROVIDER: z.enum(["auto", "gemini", "browser"]).default("auto"),
   NEXT_PUBLIC_APP_URL: z.string().url().default("http://localhost:3000"),
-  DEFAULT_LANG_PRIMARY: z.enum(["hi", "bn"]).default("hi"),
-  DEFAULT_LANG_SECONDARY: z.enum(["hi", "bn"]).default("bn"),
+  DEFAULT_LANG_PRIMARY: z.enum(["en", "hi", "bn"]).default("en"),
+  DEFAULT_LANG_SECONDARY: z.enum(["en", "hi", "bn"]).default("hi"),
   DEMO_MODE: z
     .string()
     .optional()
@@ -32,13 +31,13 @@ const EnvSchema = z.object({
 export type AppEnv = z.infer<typeof EnvSchema>;
 
 export type EffectiveLlmProvider = "gemini" | "groq" | "anthropic" | "fixture";
-export type EffectiveSttProvider = "gemini" | "groq" | "sarvam" | "webspeech" | "replay";
+export type EffectiveSttProvider = "gemini" | "groq" | "webspeech" | "replay";
 
 export type RuntimeConfig = AppEnv & {
   effectiveLlmMode: "live" | "fixture";
   effectiveLlmProvider: EffectiveLlmProvider;
   effectiveSttProvider: EffectiveSttProvider;
-  effectiveTtsProvider: "gemini" | "sarvam" | "browser";
+  effectiveTtsProvider: "gemini" | "browser";
   fallbackReasons: string[];
 };
 
@@ -62,7 +61,6 @@ export function getEnv(): RuntimeConfig {
     LLM_MODE: process.env.LLM_MODE || undefined,
     STT_PROVIDER: process.env.STT_PROVIDER || undefined,
     TTS_PROVIDER: process.env.TTS_PROVIDER || undefined,
-    SARVAM_API_KEY: process.env.SARVAM_API_KEY || undefined,
     NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL || undefined,
     DEFAULT_LANG_PRIMARY: process.env.DEFAULT_LANG_PRIMARY || undefined,
     DEFAULT_LANG_SECONDARY: process.env.DEFAULT_LANG_SECONDARY || undefined,
@@ -105,7 +103,7 @@ export function getEnv(): RuntimeConfig {
     );
   }
 
-  // Resolve STT provider (Groq Whisper > Gemini > Sarvam > WebSpeech)
+  // Resolve STT provider (Groq Whisper > Gemini > WebSpeech)
   let effectiveSttProvider: EffectiveSttProvider = "webspeech";
   if (parsed.STT_PROVIDER === "replay") {
     effectiveSttProvider = "replay";
@@ -115,16 +113,13 @@ export function getEnv(): RuntimeConfig {
     effectiveSttProvider = "groq";
   } else if (parsed.STT_PROVIDER === "gemini" && parsed.GEMINI_API_KEY) {
     effectiveSttProvider = "gemini";
-  } else if (parsed.STT_PROVIDER === "sarvam" && parsed.SARVAM_API_KEY) {
-    effectiveSttProvider = "sarvam";
   } else if (parsed.STT_PROVIDER === "auto") {
     if (parsed.GROQ_API_KEY) effectiveSttProvider = "groq";
     else if (parsed.GEMINI_API_KEY) effectiveSttProvider = "gemini";
-    else if (parsed.SARVAM_API_KEY) effectiveSttProvider = "sarvam";
     else {
       effectiveSttProvider = "webspeech";
       fallbackReasons.push(
-        "No GROQ_API_KEY / GEMINI_API_KEY / SARVAM_API_KEY: using Web Speech STT fallback"
+        "No GROQ_API_KEY / GEMINI_API_KEY: using Web Speech STT fallback"
       );
     }
   } else if (parsed.DEMO_MODE) {
@@ -134,15 +129,11 @@ export function getEnv(): RuntimeConfig {
     );
   }
 
-  let effectiveTtsProvider: "gemini" | "sarvam" | "browser" = "browser";
+  let effectiveTtsProvider: "gemini" | "browser" = "browser";
   if (parsed.TTS_PROVIDER === "gemini" && parsed.GEMINI_API_KEY) {
     effectiveTtsProvider = "gemini";
-  } else if (parsed.TTS_PROVIDER === "sarvam" && parsed.SARVAM_API_KEY) {
-    effectiveTtsProvider = "sarvam";
   } else if (parsed.TTS_PROVIDER === "auto") {
-    if (parsed.GEMINI_API_KEY) effectiveTtsProvider = "gemini";
-    else if (parsed.SARVAM_API_KEY) effectiveTtsProvider = "sarvam";
-    else effectiveTtsProvider = "browser";
+    effectiveTtsProvider = parsed.GEMINI_API_KEY ? "gemini" : "browser";
   }
 
   if (!parsed.DATABASE_URL) {

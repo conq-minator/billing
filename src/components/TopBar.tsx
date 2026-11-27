@@ -45,36 +45,17 @@ export function TopBar() {
       </div>
 
       <div className="flex items-center gap-2">
-        <div
-          role="group"
-          aria-label="Language toggle"
-          className="inline-flex rounded-lg border border-stone-200 bg-stone-100 p-0.5"
+        <select
+          aria-label="Language"
+          data-testid="lang-select"
+          value={lang}
+          onChange={(e) => setLang(e.target.value as "en" | "hi" | "bn")}
+          className="min-h-[38px] rounded-lg border border-stone-200 bg-stone-100 px-2.5 text-xs font-semibold text-stone-800 focus:border-orange-500 focus:outline-none"
         >
-          <button
-            type="button"
-            onClick={() => setLang("hi")}
-            data-testid="lang-hi"
-            className={`min-h-[36px] rounded-md px-2.5 text-xs font-semibold transition ${
-              lang === "hi"
-                ? "bg-white text-orange-600 shadow-xs"
-                : "text-stone-600"
-            }`}
-          >
-            हिं
-          </button>
-          <button
-            type="button"
-            onClick={() => setLang("bn")}
-            data-testid="lang-bn"
-            className={`min-h-[36px] rounded-md px-2.5 text-xs font-semibold transition ${
-              lang === "bn"
-                ? "bg-white text-orange-600 shadow-xs"
-                : "text-stone-600"
-            }`}
-          >
-            বাং
-          </button>
-        </div>
+          <option value="en">English</option>
+          <option value="hi">हिन्दी</option>
+          <option value="bn">বাংলা</option>
+        </select>
       </div>
     </header>
   );

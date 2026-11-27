@@ -16,10 +16,9 @@ export async function POST(req: Request) {
       const upstream = new FormData();
       upstream.append("file", file, "audio.webm");
       upstream.append("model", env.GROQ_STT_MODEL);
-      upstream.append("language", lang === "bn" ? "bn" : "hi");
       upstream.append(
         "prompt",
-        "Indian kirana store billing in Hinglish, Hindi, or Bengali: Aashirvaad atta, toor dal, Maggi, Amul doodh, Surf Excel, chawal, jeera, Kurkure, kilo, gram, packet, rupaye, bas, UPI, cash, udhaar."
+        "Indian kirana store billing in English, Hinglish, Hindi, or Bengali: Aashirvaad atta, toor dal, Maggi, Amul doodh, Surf Excel, chawal, jeera, Kurkure, kilo, gram, packet, rupaye, bas, UPI, cash, udhaar."
       );
 
       const res = await fetch(
@@ -62,9 +61,7 @@ export async function POST(req: Request) {
               role: "user",
               parts: [
                 {
-                  text: `Transcribe this Indian kirana store billing audio (${
-                    lang === "bn" ? "Bengali/English" : "Hindi/Hinglish"
-                  }). Return ONLY the spoken words, nothing else.`,
+                  text: "Transcribe this Indian kirana store billing audio (it may be in English, Hindi/Hinglish, or Bengali). Return ONLY the spoken words, nothing else.",
                 },
                 { inlineData: { mimeType, data: base64Audio } },
               ],
@@ -89,34 +86,8 @@ export async function POST(req: Request) {
       return NextResponse.json({ transcript });
     }
 
-    if (env.effectiveSttProvider === "sarvam" && env.SARVAM_API_KEY) {
-      const upstream = new FormData();
-      upstream.append("file", file, "audio.webm");
-      upstream.append("language_code", lang === "bn" ? "bn-IN" : "hi-IN");
-      upstream.append("model", "saarika:v2");
-
-      const res = await fetch("https://api.sarvam.ai/speech-to-text", {
-        method: "POST",
-        headers: {
-          "api-subscription-key": env.SARVAM_API_KEY,
-        },
-        body: upstream,
-      });
-
-      if (!res.ok) {
-        const msg = await res.text();
-        return NextResponse.json(
-          { error: "Sarvam STT error", details: msg },
-          { status: 502 }
-        );
-      }
-
-      const data = (await res.json()) as { transcript?: string };
-      return NextResponse.json({ transcript: data.transcript ?? "" });
-    }
-
     return NextResponse.json(
-      { error: "No server STT provider configured (GROQ_API_KEY / SARVAM_API_KEY missing)" },
+      { error: "No server STT provider configured (GROQ_API_KEY / GEMINI_API_KEY missing)" },
       { status: 503 }
     );
   } catch (err) {

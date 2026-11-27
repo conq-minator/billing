@@ -7,7 +7,7 @@ export type SttCallbacks = {
 };
 
 export interface SttAdapter {
-  readonly name: "gemini" | "groq" | "sarvam" | "webspeech" | "replay";
+  readonly name: "gemini" | "groq" | "webspeech" | "replay";
   isSupported(): boolean;
   start(lang: Lang, callbacks: SttCallbacks): Promise<void>;
   stop(): Promise<void>;

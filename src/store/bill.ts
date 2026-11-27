@@ -51,7 +51,7 @@ export const useBillStore = create<BillState>((set, get) => ({
   bill: null,
   shop: null,
   todayTotal: 0,
-  lang: "hi",
+  lang: "en",
   pendingQuestion: null,
   clarify: null,
   queryResult: null,

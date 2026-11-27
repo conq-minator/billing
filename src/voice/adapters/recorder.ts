@@ -6,14 +6,14 @@ import type { SttAdapter, SttCallbacks } from "./types";
  * providers (Groq Whisper and Sarvam).
  */
 export class RecorderSttAdapter implements SttAdapter {
-  readonly name: "gemini" | "groq" | "sarvam";
+  readonly name: "gemini" | "groq";
   private mediaRecorder: MediaRecorder | null = null;
   private chunks: BlobPart[] = [];
   private stream: MediaStream | null = null;
   private callbacks: SttCallbacks | null = null;
-  private lang: Lang = "hi";
+  private lang: Lang = "en";
 
-  constructor(provider: "gemini" | "groq" | "sarvam") {
+  constructor(provider: "gemini" | "groq") {
     this.name = provider;
   }
 
