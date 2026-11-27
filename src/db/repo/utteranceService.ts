@@ -298,6 +298,7 @@ export type TapCommand =
   | {
       type: "editLine";
       lineId: string;
+      name?: string;
       qty?: number;
       unit?: UnitType;
       rate?: number | null; // rupees
@@ -362,6 +363,7 @@ export async function processTapCommand(
         name: line?.nameSnapshot ?? null,
       };
       intent.changes = {
+        name: command.type === "editLine" ? (command.name ?? null) : null,
         qty: command.type === "editLine" ? (command.qty ?? null) : null,
         unit: command.type === "editLine" ? (command.unit ?? null) : null,
         price: command.rate ?? null,

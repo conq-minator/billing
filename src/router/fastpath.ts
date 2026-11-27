@@ -91,9 +91,9 @@ export function matchFastPath(
     }
   }
 
-  // 2. Finish bill
+  // 2. Finish bill / Record bill keywords
   if (
-    /^(bas|ho gaya|hogaya|total batao|bill banao|hoye geche|hoyeche|total bolo|done|khatam|shesh)$/.test(
+    /^(bas|ho gaya|hogaya|total batao|bill banao|bill bana do|hoye geche|hoyeche|total bolo|done|finish|khatam|shesh|record the bill|record bill|save bill|bill save karo|bill record karo|shompurno|pura ho gaya)$/i.test(
       norm
     )
   ) {
@@ -121,6 +121,7 @@ export function matchFastPath(
   if (/^(discount hata|discount bad|discount cancel)$/.test(norm)) {
     return makeBaseIntent("APPLY_DISCOUNT", ctx.lang, {
       changes: {
+        name: null,
         qty: null,
         unit: null,
         price: null,

@@ -10,6 +10,7 @@ const CommandSchema = z.discriminatedUnion("type", [
   z.object({
     type: z.literal("editLine"),
     lineId: z.string().uuid(),
+    name: z.string().min(1).optional(),
     qty: z.number().positive().optional(),
     unit: Unit.optional(),
     rate: z.number().nonnegative().nullable().optional(),

@@ -23,6 +23,7 @@ Rules:
    - "nahi, 20% sirf dal aur chawal pe tha" -> APPLY_DISCOUNT, kind="percent", value=20, scope="items", item_names=["dal","chawal"], is_correction=true
 6. Payments & Customer:
    - "Sharma ji ka bill" -> SET_CUSTOMER, customer={name:"Sharma ji"}
+   - "Sharma ji ne 4 kilo aata liya ₹100 kilo" -> ADD_ITEMS, customer={name:"Sharma ji"}, items=[{name:"aata", qty:4, unit:"kg", price:100, price_basis:"per_unit"}]
    - "Sharma ji ka bill, 500 diya baaki udhaar" -> SET_CUSTOMER or RECORD_PAYMENT with customer={name:"Sharma ji"}, payment={mode:"split", amount:500}
 7. Ledger queries:
    - "Aaj ka hisaab?" -> QUERY_LEDGER type="today_summary"

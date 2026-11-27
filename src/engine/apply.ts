@@ -163,6 +163,23 @@ export function apply(intent: Intent, ctx: EngineContext): EngineResult {
 
     bill.sessionState.phase = "OPEN";
     bill.sessionState.lastLineId = lastLineId;
+
+    if (intent.customer?.name) {
+      const { customer, isNew } = resolveOrCreateCustomer(
+        intent.customer.name,
+        ctx.customers,
+        ctx.shopId
+      );
+      bill.customerId = customer.id;
+      bill.customerName = customer.name;
+      if (isNew) {
+        effects.push({
+          type: "upsertCustomer",
+          c: { ...customer, isNew: true },
+        });
+      }
+    }
+
     bill = computeTotals(bill);
 
     return { bill, effects };
@@ -184,6 +201,9 @@ export function apply(intent: Intent, ctx: EngineContext): EngineResult {
     const newQty = changes?.qty ? roundQty(changes.qty) : line.qty;
     const newUnit = changes?.unit ?? line.unit;
     const oneTime = changes?.one_time ?? false;
+    if (changes?.name && changes.name.trim()) {
+      line.nameSnapshot = changes.name.trim();
+    }
     let toast: string | undefined;
 
     if (changes?.price !== null && changes?.price !== undefined && item) {
