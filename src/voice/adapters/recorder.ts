@@ -37,13 +37,33 @@ export class RecorderSttAdapter implements SttAdapter {
 
     try {
       this.stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      const recorder = new MediaRecorder(this.stream);
+      const mimeType =
+        typeof MediaRecorder.isTypeSupported === "function" &&
+        MediaRecorder.isTypeSupported("audio/webm;codecs=opus")
+          ? "audio/webm;codecs=opus"
+          : typeof MediaRecorder.isTypeSupported === "function" &&
+            MediaRecorder.isTypeSupported("audio/webm")
+          ? "audio/webm"
+          : "";
+
+      const recorder = mimeType
+        ? new MediaRecorder(this.stream, { mimeType })
+        : new MediaRecorder(this.stream);
+
       recorder.ondataavailable = (e) => {
         if (e.data.size > 0) this.chunks.push(e.data);
       };
+
       recorder.onstop = async () => {
-        const blob = new Blob(this.chunks, { type: "audio/webm" });
+        const actualMime = recorder.mimeType || "audio/webm";
+        const blob = new Blob(this.chunks, { type: actualMime });
         this.cleanupStream();
+
+        if (blob.size === 0) {
+          this.callbacks?.onError("empty_recording");
+          return;
+        }
+
         try {
           const form = new FormData();
           form.append("file", blob, "audio.webm");
@@ -52,10 +72,20 @@ export class RecorderSttAdapter implements SttAdapter {
             method: "POST",
             body: form,
           });
-          if (!res.ok) throw new Error("STT request failed");
+
+          if (!res.ok) {
+            const errData = (await res.json().catch(() => ({}))) as {
+              error?: string;
+              details?: string;
+            };
+            throw new Error(
+              errData.details || errData.error || `STT request failed (${res.status})`
+            );
+          }
+
           const data = (await res.json()) as { transcript?: string };
-          if (data.transcript) {
-            this.callbacks?.onFinal(data.transcript);
+          if (data.transcript && data.transcript.trim()) {
+            this.callbacks?.onFinal(data.transcript.trim());
           } else {
             this.callbacks?.onError("empty_transcript");
           }
@@ -65,8 +95,9 @@ export class RecorderSttAdapter implements SttAdapter {
           );
         }
       };
+
       this.mediaRecorder = recorder;
-      recorder.start();
+      recorder.start(250);
     } catch (err) {
       this.cleanupStream();
       callbacks.onError(

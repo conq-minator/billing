@@ -6,9 +6,9 @@ const EnvSchema = z.object({
     .enum(["auto", "gemini", "groq", "anthropic", "fixture"])
     .default("auto"),
   GEMINI_API_KEY: z.string().optional().default(""),
-  GEMINI_MODEL: z.string().default("gemini-2.5-flash"),
-  GEMINI_STT_MODEL: z.string().default("gemini-2.5-flash"),
-  GEMINI_TTS_MODEL: z.string().default("gemini-2.5-flash-preview-tts"),
+  GEMINI_MODEL: z.string().default("gemini-3.1-flash-lite"),
+  GEMINI_STT_MODEL: z.string().default("gemini-3.5-transcribe"),
+  GEMINI_TTS_MODEL: z.string().default("gemini-3.8-flash-tts"),
   GROQ_API_KEY: z.string().optional().default(""),
   GROQ_LLM_MODEL: z.string().default("llama-3.3-70b-versatile"),
   GROQ_STT_MODEL: z.string().default("whisper-large-v3-turbo"),

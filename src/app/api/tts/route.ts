@@ -18,50 +18,66 @@ export async function POST(req: Request) {
     }
 
     if (env.effectiveTtsProvider === "gemini" && env.GEMINI_API_KEY) {
-      const url = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(
-        env.GEMINI_TTS_MODEL
-      )}:generateContent?key=${encodeURIComponent(env.GEMINI_API_KEY)}`;
+      const candidateModels = [
+        env.GEMINI_TTS_MODEL,
+        "gemini-3.8-flash-tts",
+        "gemini-2.5-flash-preview-tts",
+      ].filter(Boolean);
+      const uniqueModels = [...new Set(candidateModels)];
 
-      const res = await fetch(url, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          contents: [{ role: "user", parts: [{ text: parsed.data.text }] }],
-          generationConfig: {
-            responseModalities: ["AUDIO"],
-            speechConfig: {
-              voiceConfig: {
-                prebuiltVoiceConfig: { voiceName: "Kore" },
+      for (const model of uniqueModels) {
+        try {
+          const url = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(
+            model
+          )}:generateContent?key=${encodeURIComponent(env.GEMINI_API_KEY)}`;
+
+          const res = await fetch(url, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              contents: [{ role: "user", parts: [{ text: parsed.data.text }] }],
+              generationConfig: {
+                responseModalities: ["AUDIO"],
+                speechConfig: {
+                  voiceConfig: {
+                    prebuiltVoiceConfig: { voiceName: "Kore" },
+                  },
+                },
               },
-            },
-          },
-        }),
-      });
+            }),
+          });
 
-      if (!res.ok) {
-        return NextResponse.json({ error: "Gemini TTS error" }, { status: 502 });
-      }
+          if (!res.ok) {
+            console.warn(`Gemini TTS model ${model} failed with status ${res.status}`);
+            continue;
+          }
 
-      const data = (await res.json()) as {
-        candidates?: Array<{
-          content?: {
-            parts?: Array<{ inlineData?: { mimeType?: string; data?: string } }>;
+          const data = (await res.json()) as {
+            candidates?: Array<{
+              content?: {
+                parts?: Array<{ inlineData?: { mimeType?: string; data?: string } }>;
+              };
+            }>;
           };
-        }>;
-      };
-      const inline = data.candidates?.[0]?.content?.parts?.[0]?.inlineData;
-      if (!inline?.data) {
-        return NextResponse.json({ error: "No audio returned" }, { status: 502 });
+          const inline = data.candidates?.[0]?.content?.parts?.[0]?.inlineData;
+          if (!inline?.data) {
+            continue;
+          }
+
+          const buf = Buffer.from(inline.data, "base64");
+          return new NextResponse(buf, {
+            status: 200,
+            headers: {
+              "Content-Type": inline.mimeType || "audio/wav",
+              "Cache-Control": "public, max-age=86400",
+            },
+          });
+        } catch (err) {
+          console.warn(`Gemini TTS model ${model} error:`, err);
+        }
       }
 
-      const buf = Buffer.from(inline.data, "base64");
-      return new NextResponse(buf, {
-        status: 200,
-        headers: {
-          "Content-Type": inline.mimeType || "audio/wav",
-          "Cache-Control": "public, max-age=86400",
-        },
-      });
+      return NextResponse.json({ error: "Gemini TTS error across candidate models" }, { status: 502 });
     }
 
     return NextResponse.json(

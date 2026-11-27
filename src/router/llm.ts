@@ -65,46 +65,63 @@ async function parseWithGemini(
   model: string,
   userContent: string
 ): Promise<Intent> {
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(
-    model
-  )}:generateContent?key=${encodeURIComponent(apiKey)}`;
+  const modelsToTry = [
+    model,
+    "gemini-3.1-flash-lite",
+    "gemini-3.5-flash-lite",
+    "gemini-3.5-flash",
+  ].filter(Boolean);
+  const uniqueModels = [...new Set(modelsToTry)];
 
-  const res = await fetch(url, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    signal: AbortSignal.timeout(LLM_TIMEOUT_MS),
-    body: JSON.stringify({
-      systemInstruction: {
-        parts: [{ text: STATIC_SYSTEM_PROMPT }],
-      },
-      contents: [
-        {
-          role: "user",
-          parts: [{ text: userContent }],
-        },
-      ],
-      generationConfig: {
-        temperature: 0,
-        maxOutputTokens: 512,
-        responseMimeType: "application/json",
-      },
-    }),
-  });
+  let lastError: Error | null = null;
+  for (const candidateModel of uniqueModels) {
+    try {
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(
+        candidateModel
+      )}:generateContent?key=${encodeURIComponent(apiKey)}`;
 
-  if (!res.ok) {
-    throw new Error(`Gemini API ${res.status}`);
+      const res = await fetch(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        signal: AbortSignal.timeout(LLM_TIMEOUT_MS),
+        body: JSON.stringify({
+          systemInstruction: {
+            parts: [{ text: STATIC_SYSTEM_PROMPT }],
+          },
+          contents: [
+            {
+              role: "user",
+              parts: [{ text: userContent }],
+            },
+          ],
+          generationConfig: {
+            temperature: 0,
+            maxOutputTokens: 512,
+            responseMimeType: "application/json",
+          },
+        }),
+      });
+
+      if (!res.ok) {
+        throw new Error(`Gemini API ${res.status}`);
+      }
+
+      const data = (await res.json()) as {
+        candidates?: Array<{
+          content?: { parts?: Array<{ text?: string }> };
+        }>;
+      };
+      const rawText = data.candidates?.[0]?.content?.parts?.[0]?.text;
+      if (!rawText) return UNKNOWN_INTENT;
+
+      const parsed = IntentSchema.safeParse(JSON.parse(rawText));
+      return parsed.success ? parsed.data : UNKNOWN_INTENT;
+    } catch (err) {
+      lastError = err instanceof Error ? err : new Error(String(err));
+    }
   }
 
-  const data = (await res.json()) as {
-    candidates?: Array<{
-      content?: { parts?: Array<{ text?: string }> };
-    }>;
-  };
-  const rawText = data.candidates?.[0]?.content?.parts?.[0]?.text;
-  if (!rawText) return UNKNOWN_INTENT;
-
-  const parsed = IntentSchema.safeParse(JSON.parse(rawText));
-  return parsed.success ? parsed.data : UNKNOWN_INTENT;
+  throw lastError ?? new Error("Gemini LLM call failed");
 }
 
 async function parseWithGroq(

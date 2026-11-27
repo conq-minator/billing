@@ -41,7 +41,7 @@ export class WebSpeechSttAdapter implements SttAdapter {
     const w = window as unknown as Record<string, new () => SpeechRecognitionLike>;
     const Ctor = w.SpeechRecognition || w.webkitSpeechRecognition;
     const rec = new Ctor();
-    rec.lang = lang === "bn" ? "bn-IN" : "hi-IN";
+    rec.lang = lang === "bn" ? "bn-IN" : lang === "hi" ? "hi-IN" : "en-IN";
     rec.interimResults = true;
     rec.continuous = true;
 
@@ -68,8 +68,10 @@ export class WebSpeechSttAdapter implements SttAdapter {
     };
 
     rec.onend = () => {
-      if (this.finalText) {
-        callbacks.onFinal(this.finalText);
+      if (this.finalText.trim()) {
+        callbacks.onFinal(this.finalText.trim());
+      } else {
+        callbacks.onError("empty_transcript");
       }
       this.recognition = null;
     };
